@@ -25,7 +25,8 @@ void CRC() {
 int main() {
     strcpy(generator, "1101");  // Example generator polynomial
     printf("Enter data: ");
-    gets(data);
+    fgets(data, sizeof(data), stdin);
+    data[strcspn(data, "\n")] = '\0';  // Remove newline if present
 
     int dataLen = strlen(data);
     int genLen = strlen(generator);
