@@ -1,41 +1,25 @@
 #include <stdio.h>
-#include <string.h>
 
-void binarySum(char a[], char b[], char result[], int len) {
-    int carry = 0;
-    for (int i = len - 1; i >= 0; i--) {
-        int bitA = a[i] - '0';
-        int bitB = b[i] - '0';
-        int sum = bitA + bitB + carry;
-        result[i] = (sum % 2) + '0';
-        carry = sum / 2;
-    }
-    if (carry) {
-        char carryBlock[10] = "00000001";
-        binarySum(result, carryBlock, result, len);
-    }
+unsigned short checksum(unsigned short *d, int n, int verify) {
+    unsigned int s = 0;
+    for (int i = 0; i < n; i++) s += d[i];
+    while (s >> 16) s = (s & 0xFFFF) + (s >> 16);
+    return verify ? s : ~s & 0xFFFF;   // if verify==1 → return sum, else checksum
 }
 
 int main() {
-    char msg[100], block[10], sum[10] = "00000000", checksum[10];
-    int blockLen, i = 0;
-
-    printf("Enter binary message: ");
-    scanf("%s", msg);
-    printf("Block size: ");
-    scanf("%d", &blockLen);
-
-    while (msg[i]) {
-        strncpy(block, &msg[i], blockLen);
-        block[blockLen] = '\0';
-        binarySum(sum, block, sum, blockLen);
-        i += blockLen;
+    int n; unsigned short w[25];
+    printf("Enter the no. of 16-bit words: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("word%d: ", i + 1);
+        scanf("%hx", &w[i]);
     }
 
-    for (i = 0; i < blockLen; i++)
-        checksum[i] = (sum[i] == '0') ? '1' : '0';
-    checksum[blockLen] = '\0';
+    unsigned short cs = checksum(w, n, 0);
+    printf("Calculated checksum: 0x%X\n", cs);
 
-    printf("Checksum: %s\n", checksum);
-    return 0;
+    w[n] = cs;  // append checksum
+
+    printf("%s\n", checksum(w, n + 1, 1) == 0xFFFF ? "No Error." : "Error Detected.");
 }
